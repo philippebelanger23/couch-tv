@@ -5,70 +5,66 @@ This copy of [Seagey/couch-tv](https://github.com/Seagey/couch-tv) is for the li
 | | |
 |---|---|
 | Name on the TV | TV - Philippe |
-| Model | TCL_55S450F-CA (55" S Class, Fire TV Edition, Canada) |
-| Software | Fire OS 7.7.1.7 (PS7717/5746), Fire TV home 7321874.1 |
+| Model | TCL_55S450F-CA (Fire TV Edition, Canada) |
+| Software | Fire OS 7.7.1.7 |
+| Wi-Fi | Same network as the Windows PC (SSID on the TV Network screen) |
+| TV IP | 192.168.1.110 |
 | Path | **Option A:** sideload the home app onto the TV. No computer stays on. |
 
-Amazon's home cannot be replaced. couch-tv sits on top of it. Pressing Home flashes Amazon's home for a moment, then couch-tv comes back. That is as far as Fire OS allows without root. Never disable `com.amazon.tv.launcher`.
+Amazon's home cannot be replaced. couch-tv sits on top of it. Pressing Home flashes Amazon's home for a moment, then couch-tv comes back. Never disable `com.amazon.tv.launcher`.
 
-The same Fire OS build (7.7.1.7) is already in the upstream issue tracker ([#12](https://github.com/Seagey/couch-tv/issues/12)). A Fire TV Edition TV (not a stick) is also reported working as a home screen ([#50](https://github.com/Seagey/couch-tv/issues/50)).
+**Already-installed apps stay.** The installer only adds `couch-tv-home.apk`. It does not uninstall, update, or replace **TiviMate** (`ar.tvplayer.tv`) or anything else. If TiviMate is on the TV, the home-row tile opens that same package.
 
-## What this path does
+Dock (first three, if those apps are installed): YouTube, Crave, TiviMate. Language: English. Weather: Notre-Dame-des-Pins, QC (nearest town for the home's weather; no street address).
 
-- New home screen on the TV (scenes, clock, weather, your apps, Keep watching from Android's Watch Next list).
-- The Fire TV remote keeps working.
-- Bluetooth / Network / Input shortcuts that Fire OS hides in long-press Home.
-- Amazon's YouTube app is recognised as YouTube.
+## 1. On the TV (once)
 
-What it does **not** do on this Fire OS:
+1. Settings → **My Fire TV** → **About**. Highlight the first line, press OK **seven times**.
+2. Developer options: **ADB debugging** on, **Apps from Unknown Sources** on.
+3. Stay on the TV. The PC's first connection asks **Allow USB debugging?** Tick **Always allow**, then **Allow**.
 
-- No always-on computer / NAS / Raspberry Pi.
-- The on-TV phone remote's D-pad, typing and "what's playing" do **not** work: current Fire OS (including 7.7.1.7) blocks an app from using the TV's own ADB. Opening apps from a phone still works if you later install the on-TV app. For a full phone remote you would need a computer on the LAN (option B), which this setup skips.
+PC and TV must be on the same Wi-Fi. Gateway on the TV was 192.168.1.1.
 
-## One-time computer
+## 2. On the Windows PC (PowerShell)
 
-A laptop on the **same Wi-Fi** as the TV is needed **once** (macOS or Linux, Python 3.11+). After `install-fire-tv.sh` finishes, that computer can go away.
+Install Git and Python 3.12 if they are missing (skip if `git` and `py -3` already work). **Restart PowerShell** after winget installs.
 
-### 1. On the TV
+```powershell
+winget install -e --id Git.Git
+winget install -e --id Python.Python.3.12
+```
 
-1. Settings → **My Fire TV** → **About**. Highlight the first line (usually the device name) and press OK **seven times** until it says you are a developer.
-2. Back, **Developer options**:
-   - **ADB debugging** on
-   - **Apps from Unknown Sources** on
-3. Settings → **My Fire TV** → **About** → **Network**. Note the IPv4 address (four numbers). Give the TV a DHCP reservation in the router if you can, so that address stays put.
-4. Stay on the TV. The first ADB connection asks **Allow USB debugging?** Tick **Always allow**, then **Allow**.
+Then, in a **new** PowerShell window:
 
-### 2. On the computer
-
-```sh
+```powershell
+cd $HOME
 git clone https://github.com/philippebelanger23/couch-tv.git
 cd couch-tv
-python3 -m venv .venv && .venv/bin/pip install -r bridge/requirements.txt
-cp config.fire-tv.example.json config.json   # then put the TV's IP in tvs[0].ip
-sh scripts/fetch-apks.sh
-TV_IP=<the address from step 1> sh scripts/install-fire-tv.sh
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r bridge\requirements.txt
+# If Windows Firewall asks, Allow Python on private networks.
+.\scripts\install-fire-tv.ps1 -TvIp 192.168.1.110
 ```
 
-`install-fire-tv.sh` installs `couch-tv-home.apk`, makes couch-tv the chosen home, and switches on the Home button watch. Amazon's launcher stays installed.
+When the TV shows **Allow USB debugging?**, tick **Always allow** and **Allow**.
 
-Press Home: Amazon's home may flash, then couch-tv. Open the gear tile on the dock for language, city/weather, people and app order.
+That installs only Couch TV Home. TiviMate is left alone. Amazon's home may flash, then Couch TV. Hold OK on a dock app to move it if the three tiles are not YouTube, Crave, TiviMate.
 
-### Undo
+### Undo (Couch TV only; TiviMate stays)
 
-```sh
-TV_IP=<the address> sh tv-home/tools/undo.sh
+```powershell
+.\scripts\install-fire-tv.ps1 -Undo -TvIp 192.168.1.110
 ```
 
-Or uninstall `app.couchtv.launcher` from Settings → Applications. Amazon's home is then the Home key again.
+Or uninstall **Couch TV** / `app.couchtv.launcher` in Settings → Applications.
 
-## Honest limits
+## Limits
 
-- Amazon's home still flashes first. Do not switch Amazon's launcher off.
-- Keep watching is Android's Watch Next row (same for everyone on the TV), not a per-person history from a computer.
-- A Google / Fire OS update can drop the Home watch. Run `install-fire-tv.sh` again; it is safe to repeat.
-- This TCL is a Fire TV Edition, not a TCL Google TV. If Home falls back to Amazon after a full power cut, say so: some TCL sets also need `AUTO_START` (the installer already tries that grant).
-- About 21 MB for the home APK. The TV had ~6 GB free.
+- Amazon's home still flashes first.
+- This PC is needed once, then it can sleep. The cloud agent cannot reach 192.168.1.110.
+- Keep watching is Android's Watch Next list.
+- Phone-remote keys do not work on Fire OS 7.7.1.7 without a computer left on (skipped).
 
 ## Upstream
 
-MIT, Copyright (c) 2026 Seagey. This repo keeps their history and adds the Fire TV home path above. Pull updates with `git fetch upstream && git merge upstream/main` after `git remote add upstream https://github.com/Seagey/couch-tv.git`.
+MIT, Copyright (c) 2026 Seagey. `git remote add upstream https://github.com/Seagey/couch-tv.git` then `git fetch upstream`.

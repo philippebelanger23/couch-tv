@@ -194,9 +194,11 @@
     try { if (TV && TV.keep) TV.keep(PFX + key, j); } catch (e) {}
   }
 
-  // Default order: YouTube, then Netflix, then the rest the way a household reaches for them.
+  // Default order: this copy's dock (YouTube, Crave, TiviMate if already installed), then the rest.
+  // TiviMate (ar.tvplayer.tv) is never installed or replaced by couch-tv; the tile opens the existing app.
   var APP_ORDER = [
-    "local.sky", "com.google.android.youtube.tv", "com.amazon.firetv.youtube", "com.netflix.ninja", "au.net.abc.iview", "com.disney.disneyplus",
+    "com.amazon.firetv.youtube", "com.google.android.youtube.tv", "ca.bellmedia.cravetv", "ar.tvplayer.tv",
+    "local.sky", "com.netflix.ninja", "au.net.abc.iview", "com.disney.disneyplus",
     "au.com.stan.and", "au.com.streamotion.ares.tv", "com.amazon.amazonvideo.livingroom",
     "com.sbs.ondemand.tv", "com.apple.atve.androidtv.appletv", "com.cbs.ca", "au.com.ninenow.ctv",
     "com.swm.live", "au.com.tenplay", "au.com.kayosports.tv", "au.com.foxtel.atv", "com.wbd.stream",

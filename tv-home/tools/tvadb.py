@@ -64,7 +64,9 @@ def connect():
     signer = PythonRSASigner(open(key + ".pub").read(), open(key).read())
     dev = AdbDeviceTcp(ip, port, default_transport_timeout_s=30)
     try:
-        dev.connect(rsa_keys=[signer], auth_timeout_s=10)
+        # First connect: the TV asks "Allow USB debugging?". 30 s so someone at the TV can tick Always allow.
+        auth_s = int(os.environ.get("TVADB_AUTH") or 30)
+        dev.connect(rsa_keys=[signer], auth_timeout_s=auth_s)
     except Exception as e:
         raise ConnectionError(
             f"cannot reach the TV at {ip}:{port} over ADB ({type(e).__name__}). Is it on, on this "

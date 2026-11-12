@@ -11,7 +11,7 @@
       "id": "living-room",
       "name": "TV - Philippe",
       "label": "TV - Philippe",
-      "ip": "SET_YOUR_TV_IP",
+      "ip": "192.168.1.110",
       "adb_port": 5555,
       "mac": "",
       "wake_on_lan": false,
@@ -24,19 +24,27 @@
   ],
   "home": {
     "look": "night",
+    "language": "en",
+    "clock": "12h",
+    "wx_unit": "c",
     "scenes": ["night", "golden", "water", "fog", "dawn"],
     "scene_seconds": 20,
-    "dock_size": 10,
+    "dock_size": 3,
     "sun_sync": false,
     "hide_packages": []
   },
+  "dock_packages": [
+    "com.amazon.firetv.youtube",
+    "ca.bellmedia.cravetv",
+    "ar.tvplayer.tv"
+  ],
   "phone_remote": false,
   "ask": { "enabled": false },
   "weather": {
-    "lat": 0,
-    "lon": 0,
-    "place": "Set in Home settings",
-    "timezone": "UTC"
+    "lat": 46.18327,
+    "lon": -70.71421,
+    "place": "Notre-Dame-des-Pins",
+    "timezone": "America/Toronto"
   },
   "country": "CA",
   "screens": [],

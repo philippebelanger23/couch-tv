@@ -3,7 +3,8 @@
 > **Philippe's public copy** of [Seagey/couch-tv](https://github.com/Seagey/couch-tv) (MIT).
 > Aimed at a **TCL 55S450F-CA** Fire TV Edition (Fire OS 7) in the living room: sideload the home
 > app onto the TV, no computer left on. Start here: **[docs/PHILIPPE-FIRE-TV.md](docs/PHILIPPE-FIRE-TV.md)**.
-> Fetch APKs with `sh scripts/fetch-apks.sh`, install with `TV_IP=… sh scripts/install-fire-tv.sh`.
+> Windows (same Wi-Fi as the TV, IP 192.168.1.110): `.\scripts\install-fire-tv.ps1 -TvIp 192.168.1.110`
+> Existing apps such as TiviMate are not uninstalled or replaced.
 > Preview the home in a browser: `sh scripts/serve-home-demo.sh`. Upstream README continues below.
 
 Your own home screen and phone remote for a Google TV, an Android TV or a Fire TV, with app
