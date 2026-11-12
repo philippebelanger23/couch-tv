@@ -27,19 +27,16 @@ PC and TV must be on the same Wi-Fi. Gateway on the TV was 192.168.1.1.
 
 ## 2. On the Windows PC (PowerShell)
 
-Install Git and Python 3.12 if they are missing (skip if `git` and `py -3` already work). **Restart PowerShell** after winget installs.
+If `py` is missing, install Python, then **close PowerShell and open a new window** (PATH only updates in a new window):
 
 ```powershell
-winget install -e --id Git.Git
 winget install -e --id Python.Python.3.12
 ```
 
-Then, in a **new** PowerShell window:
+Already cloned at `C:\Users\Phili\couch-tv`. In a **new** PowerShell window:
 
 ```powershell
-cd $HOME
-git clone https://github.com/philippebelanger23/couch-tv.git
-cd couch-tv
+cd C:\Users\Phili\couch-tv
 py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r bridge\requirements.txt
 # If Windows Firewall asks, Allow Python on private networks.
