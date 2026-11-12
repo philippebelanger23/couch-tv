@@ -12,6 +12,11 @@ class FireTvHome(unittest.TestCase):
     def test_keep_watching_off(self):
         self.assertIs(CFG["home"]["keep_watching"], False)
 
+    def test_lighter_home_for_slow_tcl(self):
+        self.assertIs(CFG["home"]["lighter"], True)
+        self.assertEqual(CFG["home"]["glass"], "off")
+        self.assertIs(CFG["home"]["moving_tiles"], False)
+
     def test_installer_never_uninstalls_tivimate(self):
         self.assertNotIn("pm uninstall ar.tvplayer.tv", INSTALL)
         self.assertIn("pm uninstall app.couchtv.launcher", INSTALL)

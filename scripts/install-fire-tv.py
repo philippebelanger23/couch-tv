@@ -67,6 +67,9 @@ def ensure_config(ip: str | None):
         home = {}
         cfg["home"] = home
     home["keep_watching"] = False
+    home["lighter"] = True
+    home["glass"] = "off"
+    home["moving_tiles"] = False
     with open(CONFIG, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2)
         f.write("\n")

@@ -31,6 +31,9 @@
     "scene_seconds": 20,
     "dock_size": 3,
     "keep_watching": false,
+    "lighter": true,
+    "glass": "off",
+    "moving_tiles": false,
     "sun_sync": false,
     "hide_packages": []
   },

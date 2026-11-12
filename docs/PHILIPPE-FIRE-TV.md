@@ -17,6 +17,8 @@ Amazon's home cannot be replaced. couch-tv sits on top of it. Pressing Home flas
 
 Dock (first three, if those apps are installed): YouTube, Crave, TiviMate. Language: English. Weather: Notre-Dame-des-Pins, QC (nearest town for the home's weather; no street address).
 
+This TCL's GPU is modest. **Lighter home** is on: no blur, no glass panels, no tile sway. That is the same setting Couch TV uses on Fire sticks. You can also switch it in Home settings → Look. The layout stays the same.
+
 ## 1. On the TV (once)
 
 1. Settings → **My Fire TV** → **About**. Highlight the first line, press OK **seven times**.
