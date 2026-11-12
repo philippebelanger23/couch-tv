@@ -27,17 +27,17 @@ PC and TV must be on the same Wi-Fi. Gateway on the TV was 192.168.1.1.
 
 ## 2. On the Windows PC (PowerShell)
 
-If `py` is missing, install Python, then **close PowerShell and open a new window** (PATH only updates in a new window):
+Python is not on this PC. Download the official 64-bit installer (last 3.12 with a Windows installer):
 
-```powershell
-winget install -e --id Python.Python.3.12
-```
+https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe
+
+On the first screen tick **Add python.exe to PATH**, then **Install Now**. Close PowerShell. PATH only updates in a **new** window.
 
 Already cloned at `C:\Users\Phili\couch-tv`. In a **new** PowerShell window:
 
 ```powershell
 cd C:\Users\Phili\couch-tv
-py -3 -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r bridge\requirements.txt
 # If Windows Firewall asks, Allow Python on private networks.
 .\scripts\install-fire-tv.ps1 -TvIp 192.168.1.110

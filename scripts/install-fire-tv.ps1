@@ -32,9 +32,10 @@ $Py = Join-Path $Root ".venv\Scripts\python.exe"
 if (-not (Test-Path $Py)) {
     $hostPy = Get-HostPython
     if (-not $hostPy) {
-        Write-Host "Python is not on PATH. In this PowerShell window run:"
-        Write-Host "  winget install -e --id Python.Python.3.12"
-        Write-Host "Then close PowerShell, open a new window, cd to this folder, and run this script again."
+        Write-Host "Python is not on PATH. Download the official 64-bit installer:"
+        Write-Host "  https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe"
+        Write-Host "On the first screen tick Add python.exe to PATH, then Install Now."
+        Write-Host "Close this PowerShell window, open a new one, cd to this folder, and run this script again."
         exit 1
     }
     Write-Host "Creating .venv with $hostPy"
