@@ -159,7 +159,7 @@ def copy_by_base64(tv, data, dest):
     tv.shell(f"rm -rf {TMP}.b64")
 
 
-def install(tv, path):
+def push_and_install(tv, path):
     data = open(path, "rb").read()
     want = hashlib.md5(data).hexdigest()
     dest = TMP + ".apk"
@@ -179,8 +179,14 @@ def install(tv, path):
         if got != want:
             tv.shell(f"rm -f {dest}")
             fail(f"the app reached the TV damaged (md5 {got or 'unknown'}, wanted {want}), not installing")
-    out = tv.shell(f"pm install -r {dest}; rm -f {dest}", 180)
+    out = tv.shell(f"pm install -r {dest}", 180)
+    tv.shell(f"rm -f {dest}")
     print(out, end="")
+    return out
+
+
+def install(tv, path):
+    out = push_and_install(tv, path)
     if "Success" not in out:
         fail("the TV did not install the app (see the line above)")
 

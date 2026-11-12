@@ -7,6 +7,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -14,6 +16,8 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
+import android.view.View
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 
 /**
@@ -23,7 +27,11 @@ import android.view.accessibility.AccessibilityEvent
  * come on screen and puts couch-tv back on top. On a Xiaomi TV it also catches the Home and Mi
  * keys as they are pressed; the window watch stays the fallback when the TV still starts its home.
  *
- * - Fire TV: Amazon's TVs start Amazon's launcher from the Home key by name.
+ * - Fire TV: Amazon's TVs start Amazon's launcher from the Home key by name. Amazon's launcher is
+ *   never disabled. If Fire OS delivers Home to this service, a short press is swallowed so Amazon
+ *   never starts. If it does not (common on Fire OS 7), a black overlay covers Amazon's home for
+ *   the moment it is in front, then couch-tv is brought back with no activity animation. That flash
+ *   is as short as Fire OS allows without root.
  * - Google TV and Android TV: the Google home outranks the default-home setting.
  *
  * Off until a computer switches it on over ADB (tv-home/tools/apply.sh, or guest-tv's
@@ -48,20 +56,33 @@ class FireWatch : AccessibilityService() {
 
     override fun onInterrupt() {}
 
-    /** Xiaomi TVs only (issue #54): every other TV's Home key is left exactly as before. */
+    /**
+     * Xiaomi (issue #54) and Fire OS: catch Home as it is pressed so the stock home never starts,
+     * when the TV actually delivers the key. Long-press repeats are left to the system. Other TVs
+     * keep the previous behaviour (window watch only).
+     */
     override fun onKeyEvent(event: KeyEvent): Boolean {
-        if (!isXiaomi()) return false
-        val homeKey = event.keyCode == KeyEvent.KEYCODE_HOME ||
-            (event.keyCode == KeyEvent.KEYCODE_BUTTON_5 && event.scanCode == XIAOMI_MI_SCAN)
-        if (!homeKey || CrashGuard.standingAside(this)) return false
-        if (event.action == KeyEvent.ACTION_UP && event.repeatCount == 0) bringBack()
-        return true
+        if (isXiaomi()) {
+            val homeKey = event.keyCode == KeyEvent.KEYCODE_HOME ||
+                (event.keyCode == KeyEvent.KEYCODE_BUTTON_5 && event.scanCode == XIAOMI_MI_SCAN)
+            if (!homeKey || CrashGuard.standingAside(this)) return false
+            if (event.action == KeyEvent.ACTION_UP && event.repeatCount == 0) bringBack()
+            return true
+        }
+        if (!hasAmazonHome(this) || event.keyCode != KeyEvent.KEYCODE_HOME) return false
+        if (CrashGuard.standingAside(this)) return false
+        if (event.repeatCount != 0) return false
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            bringBack()
+            return true
+        }
+        return event.action == KeyEvent.ACTION_UP
     }
 
     override fun onServiceConnected() {
         connected = true
-        // Key filtering is switched on at run time and only on Xiaomi, so no other TV sees key presses here.
-        if (isXiaomi()) runCatching {
+        // Key filtering on Xiaomi and Fire OS only, so a Google TV's Home key is left alone.
+        if (isXiaomi() || hasAmazonHome(this)) runCatching {
             serviceInfo = serviceInfo.also { it.flags = it.flags or AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS }
         }
         homeClasses = homeActivitiesOf(this)
@@ -78,7 +99,7 @@ class FireWatch : AccessibilityService() {
         if ((android.os.Build.MANUFACTURER.equals("Amazon", ignoreCase = true) || TclPlaceholderInput.isTcl()) &&
             SystemClock.elapsedRealtime() < BOOT_WINDOW_MS && !CrashGuard.standingAside(this)) {
             Log.i("couchtv.firewatch", "bound just after a restart: putting couch-tv in front")
-            runCatching { startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            bringBack()
         }
     }
 
@@ -86,6 +107,7 @@ class FireWatch : AccessibilityService() {
         connected = false
         handler.removeCallbacks(recheck)
         recheckPending = false
+        hideCover()
         return super.onUnbind(intent)
     }
 
@@ -111,7 +133,8 @@ class FireWatch : AccessibilityService() {
 
     private fun bringBack() {
         last = System.currentTimeMillis()
-        runCatching { startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        if (hasAmazonHome(this)) showCover(this)
+        runCatching { startActivity(homeIntent(this)) }
     }
 
     /** After an update or a reboot: put the watcher back if it was switched on. */
@@ -125,8 +148,12 @@ class FireWatch : AccessibilityService() {
     companion object {
         /** Set while Android has this service bound. */
         @Volatile var connected = false
-        private const val DEBOUNCE_MS = 1200L   // one jump per press, not one per event
+        private const val DEBOUNCE_MS = 400L   // one jump per press; short so Amazon's home is covered quickly
         private const val BOOT_WINDOW_MS = 2 * 60_000L
+        private const val COVER_MS = 1_500L
+        private val coverHandler = Handler(Looper.getMainLooper())
+        @Volatile private var coverView: View? = null
+        private val hideCoverLater = Runnable { hideCover() }
 
         /**
          * The watch listed as on in Settings but not bound (what a force-stop leaves behind, the same
@@ -155,6 +182,7 @@ class FireWatch : AccessibilityService() {
         // MiTV-MOOQ1's Mi-logo key reports BUTTON_5 with this scan code, not KEYCODE_HOME.
         private const val XIAOMI_MI_SCAN = 580
         private fun isXiaomi() = Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)
+        fun hasAmazonHome(c: Context) = runCatching { c.packageManager.getPackageInfo(AMAZON_HOME, 0) }.isSuccess
         const val GOOGLE_TV_HOME = "com.google.android.apps.tv.launcherx"
         const val ANDROID_TV_HOME = "com.google.android.tvlauncher"
         /** Fire OS's own Settings screen, opened by name (see [amazonSettings]). */
@@ -175,6 +203,67 @@ class FireWatch : AccessibilityService() {
 
         /** The activities of the Google homes that the TV itself lists as a HOME screen (read when the service binds). */
         @Volatile var homeClasses: Set<String> = emptySet()
+
+        fun homeIntent(c: Context): Intent = Intent(c, MainActivity::class.java)
+            .addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                    Intent.FLAG_ACTIVITY_NO_ANIMATION
+            )
+
+        /**
+         * Cover Amazon's home for the moment it is in front (SYSTEM_ALERT_WINDOW, already granted on
+         * install). Removed when couch-tv resumes, or after [COVER_MS] if that never happens.
+         */
+        fun showCover(c: Context) {
+            val app = c.applicationContext
+            coverHandler.post {
+                if (coverView != null) {
+                    coverHandler.removeCallbacks(hideCoverLater)
+                    coverHandler.postDelayed(hideCoverLater, COVER_MS)
+                    return@post
+                }
+                val wm = app.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                @Suppress("DEPRECATION")
+                val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                } else {
+                    WindowManager.LayoutParams.TYPE_PHONE
+                }
+                val lp = WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    overlayType,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                    PixelFormat.OPAQUE
+                )
+                val v = View(app).apply { setBackgroundColor(Color.BLACK) }
+                try {
+                    wm.addView(v, lp)
+                    coverView = v
+                    coverHandler.removeCallbacks(hideCoverLater)
+                    coverHandler.postDelayed(hideCoverLater, COVER_MS)
+                } catch (e: Exception) {
+                    Log.w("couchtv.firewatch", "home cover overlay not shown: ${e.message}")
+                }
+            }
+        }
+
+        fun hideCover() {
+            coverHandler.post {
+                val v = coverView ?: return@post
+                coverView = null
+                coverHandler.removeCallbacks(hideCoverLater)
+                try {
+                    (v.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).removeView(v)
+                } catch (_: Exception) {}
+            }
+        }
 
         /**
          * Google TV's home is not always `.home.HomeActivity`: a TCL on Android TV 11 starts

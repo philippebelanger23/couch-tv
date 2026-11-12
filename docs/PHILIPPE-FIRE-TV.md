@@ -45,7 +45,17 @@ python -m venv .venv
 
 When the TV shows **Allow USB debugging?**, tick **Always allow** and **Allow**.
 
-That installs only Couch TV Home. TiviMate is left alone. Amazon's home may flash, then Couch TV. Hold OK on a dock app to move it if the three tiles are not YouTube, Crave, TiviMate.
+That installs only Couch TV Home. TiviMate is left alone. Keep watching is off. Amazon's launcher stays installed; Home may still flash briefly (Fire OS starts it by name; without root that cannot be removed). This copy intercepts Home when Fire OS delivers the key, covers the flash with an overlay, and turns off window animations.
+
+Hold OK on a dock app to move it if the three tiles are not YouTube, Crave, TiviMate.
+
+To update after `git pull` (same PC, same TV):
+
+```powershell
+cd C:\Users\Phili\couch-tv
+git pull
+.\scripts\install-fire-tv.ps1 -TvIp 192.168.1.110
+```
 
 ### Undo (Couch TV only; TiviMate stays)
 
@@ -57,9 +67,9 @@ Or uninstall **Couch TV** / `app.couchtv.launcher` in Settings → Applications.
 
 ## Limits
 
-- Amazon's home still flashes first.
+- Amazon's home can still flash for a moment. Fire OS 7 starts `com.amazon.tv.launcher` by name; it is not disabled. The overlay + no window animation is as short as this path allows.
 - This PC is needed once, then it can sleep. The cloud agent cannot reach 192.168.1.110.
-- Keep watching is Android's Watch Next list.
+- Keep watching is hidden (`home.keep_watching: false`). Turn it back on in Home settings, Look, if wanted.
 - Phone-remote keys do not work on Fire OS 7.7.1.7 without a computer left on (skipped).
 
 ## Upstream

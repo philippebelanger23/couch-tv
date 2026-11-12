@@ -32,6 +32,13 @@ class FireSettingsWatch(unittest.TestCase):
     def test_grace_only_spares_amazon_windows(self):
         self.assertRegex(WATCH, r"packageName\?\.toString\(\) == AMAZON_HOME && settingsAllowed\(\)")
 
+    def test_fire_os_filters_home_key(self):
+        self.assertIn("hasAmazonHome(this)", WATCH)
+        self.assertIn("FLAG_ACTIVITY_NO_ANIMATION", WATCH)
+        self.assertIn("TYPE_APPLICATION_OVERLAY", WATCH)
+        self.assertIn("DEBOUNCE_MS = 400L", WATCH)
+        self.assertNotIn("if (!isXiaomi()) return false", WATCH)
+
 
 if __name__ == "__main__":
     unittest.main()

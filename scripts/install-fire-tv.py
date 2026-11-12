@@ -62,6 +62,14 @@ def ensure_config(ip: str | None):
         print("Wrote config.json from config.fire-tv.example.json")
     with open(CONFIG, encoding="utf-8") as f:
         cfg = json.load(f)
+    home = cfg.setdefault("home", {})
+    if not isinstance(home, dict):
+        home = {}
+        cfg["home"] = home
+    home["keep_watching"] = False
+    with open(CONFIG, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2)
+        f.write("\n")
     if ip:
         for tv in cfg.get("tvs") or []:
             if tv.get("id") == "living-room" or tv.get("ip") in ("SET_YOUR_TV_IP", "", None):
@@ -117,7 +125,15 @@ def apply(ip: str):
             pass
 
     print("1/4  Installing couch-tv-home.apk only (does not touch TiviMate or other apps)")
-    tvadb.install(tv, APK)
+    out = tvadb.push_and_install(tv, APK)
+    if "Success" not in out:
+        mismatch = "UPDATE_INCOMPATIBLE" in out or "signatures" in out.lower()
+        if mismatch:
+            print("     Replacing Couch TV only (new signing key). TiviMate is not uninstalled.")
+            sh("pm uninstall app.couchtv.launcher")
+            out = tvadb.push_and_install(tv, APK)
+        if "Success" not in out:
+            sys.exit("the TV did not install couch-tv-home.apk (TiviMate was not changed)")
     sh(f"cmd package set-home-activity {HOME_ACT}")
     now = sh("cmd shortcut get-default-launcher")
     present = packages(sh("pm list packages"))
@@ -138,6 +154,10 @@ def apply(ip: str):
     sh_ok("appops set app.couchtv.launcher GET_USAGE_STATS allow")
     sh_ok("appops set app.couchtv.launcher SYSTEM_ALERT_WINDOW allow")
     sh_ok("appops set app.couchtv.launcher AUTO_START allow")
+    # Shorten the Amazon-home flash: no window/transition animation. Does not disable Amazon's launcher.
+    sh_ok("settings put global window_animation_scale 0")
+    sh_ok("settings put global transition_animation_scale 0")
+    sh_ok("settings put global animator_duration_scale 0")
 
     print("2/4  Amazon's launcher stays on")
     print("3/4  Home button watch + settings")
@@ -211,6 +231,9 @@ def undo(ip: str):
     else:
         sh("settings delete secure enabled_accessibility_services")
     sh_ok("cmd package set-home-activity com.amazon.tv.launcher/.ui.Home")
+    sh_ok("settings put global window_animation_scale 1")
+    sh_ok("settings put global transition_animation_scale 1")
+    sh_ok("settings put global animator_duration_scale 1")
     print("Home button watch is off. Amazon's home is the Home key again.")
     print("Uninstall Couch TV in Settings, Applications if you want that APK gone.")
     print("TiviMate and other apps are not uninstalled.")
@@ -224,7 +247,7 @@ def main():
     do_undo = "--undo" in flags
     ip_arg = args[0] if args else None
 
-    if not os.path.isfile(APK) or prep:
+    if not do_undo:
         fetch_apks()
     cfg = ensure_config(ip_arg)
     if prep and not do_undo:

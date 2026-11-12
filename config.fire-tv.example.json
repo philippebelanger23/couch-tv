@@ -30,6 +30,7 @@
     "scenes": ["night", "golden", "water", "fog", "dawn"],
     "scene_seconds": 20,
     "dock_size": 3,
+    "keep_watching": false,
     "sun_sync": false,
     "hide_packages": []
   },

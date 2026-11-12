@@ -161,6 +161,7 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         resumed = true
+        FireWatch.hideCover()
         restoreTimeout()   // back in front: the normal screen timeout goes back
         hideSystemBars()
         // Back within a moment of opening a channel card: the app crashed on the way in (see
