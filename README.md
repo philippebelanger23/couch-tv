@@ -1,5 +1,11 @@
 # couch-tv
 
+> **Philippe's public copy** of [Seagey/couch-tv](https://github.com/Seagey/couch-tv) (MIT).
+> Aimed at a **TCL 55S450F-CA** Fire TV Edition (Fire OS 7) in the living room: sideload the home
+> app onto the TV, no computer left on. Start here: **[docs/PHILIPPE-FIRE-TV.md](docs/PHILIPPE-FIRE-TV.md)**.
+> Fetch APKs with `sh scripts/fetch-apks.sh`, install with `TV_IP=… sh scripts/install-fire-tv.sh`.
+> Preview the home in a browser: `sh scripts/serve-home-demo.sh`. Upstream README continues below.
+
 Your own home screen and phone remote for a Google TV, an Android TV or a Fire TV, with app
 versions for Samsung and LG (run on ten real LGs so far), a Roku version, and Beta versions for
 Hisense VIDAA, Philips, Panasonic, VIZIO, Fire TV on Vega OS and Apple TV

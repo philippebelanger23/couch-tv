@@ -1,0 +1,46 @@
+{
+  "bridge": {
+    "host": "",
+    "port": 5400,
+    "fallback_hosts": [],
+    "pairing_key": ""
+  },
+  "default_tv": "living-room",
+  "tvs": [
+    {
+      "id": "living-room",
+      "name": "TV - Philippe",
+      "label": "TV - Philippe",
+      "ip": "SET_YOUR_TV_IP",
+      "adb_port": 5555,
+      "mac": "",
+      "wake_on_lan": false,
+      "paired": false,
+      "quick": ["sleep", "look", "input", "bluetooth", "network"]
+    }
+  ],
+  "people": [
+    { "id": "philippe", "name": "Philippe" }
+  ],
+  "home": {
+    "look": "night",
+    "scenes": ["night", "golden", "water", "fog", "dawn"],
+    "scene_seconds": 20,
+    "dock_size": 10,
+    "sun_sync": false,
+    "hide_packages": []
+  },
+  "phone_remote": false,
+  "ask": { "enabled": false },
+  "weather": {
+    "lat": 0,
+    "lon": 0,
+    "place": "Set in Home settings",
+    "timezone": "UTC"
+  },
+  "country": "CA",
+  "screens": [],
+  "home_assistant": {
+    "enabled": false
+  }
+}
