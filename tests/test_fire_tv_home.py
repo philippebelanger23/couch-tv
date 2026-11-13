@@ -11,6 +11,10 @@ INSTALL = (ROOT / "scripts/install-fire-tv.py").read_text()
 class FireTvHome(unittest.TestCase):
     def test_keep_watching_off(self):
         self.assertIs(CFG["home"]["keep_watching"], False)
+        app = (ROOT / "tv-home/web/app.js").read_text()
+        self.assertIn("if (HOME.keep_watching === false)", app)
+        css = (ROOT / "tv-home/web/app.css").read_text()
+        self.assertIn("html.kw-off #shelf-section.empty", css)
 
     def test_lighter_home_for_slow_tcl(self):
         self.assertIs(CFG["home"]["lighter"], True)

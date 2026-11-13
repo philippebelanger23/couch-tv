@@ -1646,7 +1646,8 @@ html.lighter .ambient-wave span, html.old-engine .ambient-wave span { animation:
 
 /* Keep watching switched off (home.keep_watching, Home settings): with a song playing on the Night look the
    Now playing card keeps the row on its own, with no heading and no empty strip beside it */
-html.kw-off #shelf-title, html.kw-off .shelf-clip { display: none; }
+html.kw-off #shelf-title, html.kw-off .shelf-clip, html.kw-off .shelf-none { display: none !important; }
+html.kw-off #shelf-section.empty { display: none !important; }
 
 
 /* Home settings, Look, Hide rows when idle. Keep the scenes and clock/weather clear. */

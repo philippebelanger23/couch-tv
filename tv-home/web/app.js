@@ -399,6 +399,15 @@
     NP_ON = typeof ST.now_playing === "boolean" ? ST.now_playing : HOME.now_playing !== false;
     // the Keep watching row: Home settings win over home.keep_watching; off hides it and stops fetching it
     KW_ON = typeof ST.keep_watching === "boolean" ? ST.keep_watching : HOME.keep_watching !== false;
+    // This Fire TV copy: Continue watching stays off. A saved ST.keep_watching from the first
+    // sideload (default on) was leaving the row on screen after config said false.
+    if (HOME.keep_watching === false) {
+      if (ST.keep_watching !== false) {
+        ST.keep_watching = false;
+        try { keepSettings(false); } catch (e) {}
+      }
+      KW_ON = false;
+    }
     document.documentElement.classList.toggle("kw-off", !KW_ON);
     // the full screen music view is off until it is switched on in Home settings or home.ambient_music
     AMBIENT_MUSIC = typeof ST.ambient_music === "boolean" ? ST.ambient_music : HOME.ambient_music === true;
@@ -1880,7 +1889,7 @@
     // nobody has anything on the go: no empty box, the photo has the space (unless Now playing
     // is up at night). The people switcher stays: with nothing yet (Netflix tells Android nothing on
     // some TVs, issue #23) it is the only way to say who is watching before anything is played.
-    $("shelf-section").classList.toggle("empty", !anyone && !(NIGHT && npVisible()));
+    $("shelf-section").classList.toggle("empty", !KW_ON || (!anyone && !(NIGHT && npVisible())));
     renderPeople();
     if (!KW_ON) { track.innerHTML = ""; shelfEls = []; return; }   // row switched off: nothing to draw, the section is closed up
     if (!data.shows.length) {

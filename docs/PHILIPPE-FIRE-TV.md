@@ -71,7 +71,7 @@ Or uninstall **Couch TV** / `app.couchtv.launcher` in Settings → Applications.
 
 - Amazon's home can still flash for a moment. Fire OS 7 starts `com.amazon.tv.launcher` by name; it is not disabled. The overlay + no window animation is as short as this path allows.
 - This PC is needed once, then it can sleep. The cloud agent cannot reach 192.168.1.110.
-- Keep watching is hidden (`home.keep_watching: false`). Turn it back on in Home settings, Look, if wanted.
+- Keep watching / Continue watching is removed in the home app (not only config). A reinstall of `couch-tv-home.apk` is required for that change to reach the TV.
 - Phone-remote keys do not work on Fire OS 7.7.1.7 without a computer left on (skipped).
 
 ## Upstream
