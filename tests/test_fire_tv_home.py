@@ -12,7 +12,8 @@ class FireTvHome(unittest.TestCase):
     def test_keep_watching_off(self):
         self.assertIs(CFG["home"]["keep_watching"], False)
         app = (ROOT / "tv-home/web/app.js").read_text()
-        self.assertIn("if (HOME.keep_watching === false)", app)
+        self.assertIn("KW_ON = false;", app)
+        self.assertIn("ca.bellmedia.cravetv", (ROOT / "config.fire-tv.example.json").read_text())
         css = (ROOT / "tv-home/web/app.css").read_text()
         self.assertIn("html.kw-off #shelf-section.empty", css)
 

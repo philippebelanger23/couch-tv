@@ -31,6 +31,7 @@
     "scene_seconds": 20,
     "dock_size": 3,
     "keep_watching": false,
+    "skip_watch_next": ["ca.bellmedia.cravetv"],
     "lighter": true,
     "glass": "off",
     "moving_tiles": false,

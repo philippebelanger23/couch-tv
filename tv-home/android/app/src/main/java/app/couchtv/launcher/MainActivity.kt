@@ -1069,6 +1069,8 @@ class MainActivity : Activity() {
             } catch (e: Exception) {
                 null
             }
+            // Continue watching off: do not feed Crave/Netflix Watch Next into the home page.
+            if (homeCfg == null || !homeCfg.optBoolean("keep_watching", false)) return out
             val skipSet = HashSet<String>().apply {
                 homeCfg?.optJSONArray("skip_watch_next")?.let { arr ->
                     for (i in 0 until arr.length()) {

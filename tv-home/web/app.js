@@ -102,7 +102,7 @@
   var IDLE_PHOTO_SECONDS = 0, idlePhotoTimer = null, idlePhotoActive = false;
   var WX_AMBIENT = true, WX_SUN_GRADE = true;
   // Now playing (#31), on unless switched off; the navigation sound: system, soft or off (#32)
-  var NP_ON = true, KW_ON = true, SOUND_STYLE = "system";
+  var NP_ON = true, KW_ON = false, SOUND_STYLE = "system";
   // Ambient sleep soundscapes (rain, fire, waves, brown noise)
   var SOUND_TYPE = "off", SOUND_VOL = 0.5, SOUND_FADE_SLEEP = true;
   function initSoundscape() {
@@ -397,18 +397,14 @@
     // glass app icons (#25): set in Home settings, else home.glass_icons; off unless switched on
     GLASS_ICONS = typeof ST.glass_icons === "boolean" ? ST.glass_icons : HOME.glass_icons === true;
     NP_ON = typeof ST.now_playing === "boolean" ? ST.now_playing : HOME.now_playing !== false;
-    // the Keep watching row: Home settings win over home.keep_watching; off hides it and stops fetching it
-    KW_ON = typeof ST.keep_watching === "boolean" ? ST.keep_watching : HOME.keep_watching !== false;
-    // This Fire TV copy: Continue watching stays off. A saved ST.keep_watching from the first
-    // sideload (default on) was leaving the row on screen after config said false.
-    if (HOME.keep_watching === false) {
-      if (ST.keep_watching !== false) {
-        ST.keep_watching = false;
-        try { keepSettings(false); } catch (e) {}
-      }
-      KW_ON = false;
-    }
-    document.documentElement.classList.toggle("kw-off", !KW_ON);
+    // Keep watching / Continue watching: this Fire TV copy never shows the row. Do not wait on
+    // HOME.keep_watching (missing from an old saved config) and do not honour a leftover ST true.
+    ST.keep_watching = false;
+    KW_ON = false;
+    data.shows = [];
+    data.showsBy = {};
+    document.documentElement.classList.add("kw-off");
+    try { keepSettings(false); } catch (e) {}
     // the full screen music view is off until it is switched on in Home settings or home.ambient_music
     AMBIENT_MUSIC = typeof ST.ambient_music === "boolean" ? ST.ambient_music : HOME.ambient_music === true;
     GLASS_FOCUS = (ST.glass_focus || HOME.glass_focus) === "glass" ? "glass" : "colour";
@@ -3191,9 +3187,9 @@
     // a slow box (#58): no blur, no soft shadows, a still photo and smaller pictures, all in one switch
     // the whole Keep watching row, heading and all (home.keep_watching): off closes the gap and stops fetching it
     rows.push({ kind: "toggle", key: "keep-watching", label: t("keep_show"), value: KW_ON ? t("on") : t("off"), act: function () {
-      KW_ON = !KW_ON; ST.keep_watching = KW_ON; saveSettings();
-      document.documentElement.classList.toggle("kw-off", !KW_ON);
-      if (!KW_ON) { data.shows = []; shelfEls = []; s = 0; }
+      KW_ON = false; ST.keep_watching = false; saveSettings();
+      document.documentElement.classList.add("kw-off");
+      data.shows = []; data.showsBy = {}; shelfEls = []; s = 0;
       renderShelf(); renderNp();
     } });
     rows.push({ kind: "toggle", key: "lighter", label: t("lighter"), value: LIGHTER ? t("on") : t("off"), act: function () {
@@ -4391,7 +4387,12 @@
     startVideo();
     photoTimer = setInterval(nextPhoto, PHOTO_MS);
     var cached = load();
-    if (cached) { data.showsBy = cached.showsBy || data.showsBy; data.screens = cached.screens || []; data.order = cached.order || null; }
+    if (cached) {
+      if (KW_ON) data.showsBy = cached.showsBy || data.showsBy;
+      else data.showsBy = {};
+      data.screens = cached.screens || [];
+      data.order = cached.order || null;
+    }
     setPeople(PEOPLE);   // the cache may predate someone new
     if (OFFLINE) {   // no bridge: an order made with this TV's remote wins
       var lo = kept("tvhome.order.tv");

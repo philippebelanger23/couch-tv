@@ -67,6 +67,12 @@ def ensure_config(ip: str | None):
         home = {}
         cfg["home"] = home
     home["keep_watching"] = False
+    skip = home.get("skip_watch_next")
+    if not isinstance(skip, list):
+        skip = []
+    if "ca.bellmedia.cravetv" not in skip:
+        skip.append("ca.bellmedia.cravetv")
+    home["skip_watch_next"] = skip
     home["lighter"] = True
     home["glass"] = "off"
     home["moving_tiles"] = False

@@ -8,9 +8,8 @@ const appJs = fs.readFileSync(path.join(web, 'app.js'), 'utf8');
 const i18n = fs.readFileSync(path.join(web, 'i18n.js'), 'utf8');
 const css = fs.readFileSync(path.join(web, 'app.css'), 'utf8');
 
-// Home settings win over home.keep_watching, and the default is on
-assert(/KW_ON = typeof ST\.keep_watching === "boolean" \? ST\.keep_watching : HOME\.keep_watching !== false/.test(appJs), 'setting wins over config, default on');
-assert(appJs.includes('if (HOME.keep_watching === false)'), 'Fire TV copy forces the row off when config says false');
+assert(/var NP_ON = true, KW_ON = false/.test(appJs), 'Keep watching starts off');
+assert(appJs.includes('KW_ON = false;'), 'Fire TV copy forces Continue watching off');
 // a toggle row in Home settings
 assert(appJs.includes('key: "keep-watching"'), 'Home settings has the Show Keep watching row');
 // off means no fetching: the per person calls and the Watch Next report are both gated
